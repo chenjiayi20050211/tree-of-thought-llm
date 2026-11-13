@@ -1,47 +1,40 @@
-import os
-import openai
-import backoff 
-
-completion_tokens = prompt_tokens = 0
-
-api_key = os.getenv("OPENAI_API_KEY", "")
-if api_key != "":
-    openai.api_key = api_key
-else:
-    print("Warning: OPENAI_API_KEY is not set")
-    
-api_base = os.getenv("OPENAI_API_BASE", "")
-if api_base != "":
-    print("Warning: OPENAI_API_BASE is set to {}".format(api_base))
-    openai.api_base = api_base
-
-@backoff.on_exception(backoff.expo, openai.error.OpenAIError)
-def completions_with_backoff(**kwargs):
-    return openai.ChatCompletion.create(**kwargs)
-
-def gpt(prompt, model="gpt-4", temperature=0.7, max_tokens=1000, n=1, stop=None) -> list:
-    messages = [{"role": "user", "content": prompt}]
-    return chatgpt(messages, model=model, temperature=temperature, max_tokens=max_tokens, n=n, stop=stop)
-    
-def chatgpt(messages, model="gpt-4", temperature=0.7, max_tokens=1000, n=1, stop=None) -> list:
-    global completion_tokens, prompt_tokens
-    outputs = []
-    while n > 0:
-        cnt = min(n, 20)
-        n -= cnt
-        res = completions_with_backoff(model=model, messages=messages, temperature=temperature, max_tokens=max_tokens, n=cnt, stop=stop)
-        outputs.extend([choice.message.content for choice in res.choices])
-        # log completion tokens
-        completion_tokens += res.usage.completion_tokens
-        prompt_tokens += res.usage.prompt_tokens
+import os, json, time, urllib.request, re
+from pathlib import Path
+completion_tokens = prompt_tokens = calls = 0
+ROOT = Path(os.getenv("TOT_ROOT", str(Path(__file__).resolve().parents[2])))
+def gpt(prompt, model="deepseek-chat", temperature=0.7, max_tokens=1000, n=1, stop=None):
+    if 'Possible next steps:' in prompt:
+        rule = 'Continue the last example. Output ONLY lines of the form a + b = c (left: d e c), using + - * /. No headings, bullets, markdown, explanations or questions.'
+    elif 'Judge:' in prompt:
+        rule = 'Output exactly one lowercase word: sure or impossible. No other text.'
+    elif prompt.startswith('Evaluate if'):
+        rule = 'Evaluate the final input following the examples. Show your arithmetic reasoning first. End with a separate final line containing exactly one lowercase word: sure, likely, or impossible. No text after that line.'
+    else:
+        rule = 'Continue the last solution. Output only one line: Answer: <arithmetic expression using each original input once> = 24. No commentary.'
+    return chatgpt([{"role":"system","content":rule},{"role":"user","content":prompt}], model, temperature, max_tokens, n, stop)
+def chatgpt(messages, model="deepseek-chat", temperature=0.7, max_tokens=1000, n=1, stop=None):
+    global completion_tokens, prompt_tokens, calls
+    config_path = Path(os.getenv("TOT_CONFIG", str(ROOT / ".env")))
+    cfg = dict(l.split("=", 1) for l in config_path.read_text().splitlines() if "=" in l and not l.lstrip().startswith("#")) if config_path.exists() else {}
+    cfg["DEEPSEEK_API_KEY"] = os.getenv("DEEPSEEK_API_KEY", cfg.get("DEEPSEEK_API_KEY", ""))
+    if not cfg["DEEPSEEK_API_KEY"].strip(): raise RuntimeError("Set DEEPSEEK_API_KEY or create .env")
+    outputs=[]
+    for _ in range(n):
+        if (ROOT / "STOP").exists(): raise RuntimeError("Paused for format investigation")
+        if calls >= int(os.getenv("TOT_CALL_LIMIT", "150")) or prompt_tokens + completion_tokens >= 500000:
+            raise RuntimeError("Conservative experiment usage cap reached")
+        payload=dict(model=model,messages=messages,temperature=temperature,max_tokens=max_tokens)
+        if stop: payload["stop"]=stop
+        req=urllib.request.Request("https://api.deepseek.com/chat/completions",data=json.dumps(payload).encode(),headers={"Authorization":"Bearer "+cfg["DEEPSEEK_API_KEY"].strip(),"Content-Type":"application/json"})
+        t=time.time()
+        with urllib.request.urlopen(req,timeout=120) as response: data=json.load(response)
+        calls+=1
+        usage=data["usage"]
+        prompt_tokens+=usage["prompt_tokens"]; completion_tokens+=usage["completion_tokens"]
+        output=data["choices"][0]["message"]["content"]
+        outputs.append(output)
+        with (ROOT / os.getenv("TOT_LOG", "adapted-api-log.jsonl")).open("a") as f:
+            f.write(json.dumps(dict(call=calls,model=data.get("model"),seconds=time.time()-t,usage=usage,prompt=messages,output=output))+"\n")
     return outputs
-    
-def gpt_usage(backend="gpt-4"):
-    global completion_tokens, prompt_tokens
-    if backend == "gpt-4":
-        cost = completion_tokens / 1000 * 0.06 + prompt_tokens / 1000 * 0.03
-    elif backend == "gpt-3.5-turbo":
-        cost = completion_tokens / 1000 * 0.002 + prompt_tokens / 1000 * 0.0015
-    elif backend == "gpt-4o":
-        cost = completion_tokens / 1000 * 0.00250 + prompt_tokens / 1000 * 0.01
-    return {"completion_tokens": completion_tokens, "prompt_tokens": prompt_tokens, "cost": cost}
+def gpt_usage(backend="deepseek-chat"):
+    return dict(completion_tokens=completion_tokens,prompt_tokens=prompt_tokens,calls=calls,cost=None)
