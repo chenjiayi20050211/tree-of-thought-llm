@@ -1,0 +1,77 @@
+[
+  {
+    "condition": "label_only",
+    "index": 901,
+    "input": "1 2 4 7",
+    "status": "completed",
+    "scores": [],
+    "success": false,
+    "seconds": 184.7676510810852,
+    "usage": {
+      "completion_tokens": 1470,
+      "prompt_tokens": 63172,
+      "calls": 167,
+      "cost": null
+    }
+  },
+  {
+    "condition": "label_only",
+    "index": 902,
+    "input": "2 5 8 11",
+    "status": "completed",
+    "scores": [],
+    "success": false,
+    "seconds": 290.2793459892273,
+    "usage": {
+      "completion_tokens": 1910,
+      "prompt_tokens": 92549,
+      "calls": 242,
+      "cost": null
+    }
+  },
+  {
+    "condition": "label_only",
+    "index": 903,
+    "input": "3 4 4 13",
+    "status": "completed",
+    "scores": [],
+    "success": false,
+    "seconds": 263.58863496780396,
+    "usage": {
+      "completion_tokens": 2021,
+      "prompt_tokens": 90190,
+      "calls": 236,
+      "cost": null
+    }
+  },
+  {
+    "condition": "label_only",
+    "index": 904,
+    "input": "6 7 8 9",
+    "status": "completed",
+    "scores": [],
+    "success": false,
+    "seconds": 243.21498203277588,
+    "usage": {
+      "completion_tokens": 1784,
+      "prompt_tokens": 80870,
+      "calls": 212,
+      "cost": null
+    }
+  },
+  {
+    "condition": "label_only",
+    "index": 905,
+    "input": "1 11 11 13",
+    "status": "completed",
+    "scores": [],
+    "success": false,
+    "seconds": 259.3274459838867,
+    "usage": {
+      "completion_tokens": 1791,
+      "prompt_tokens": 81946,
+      "calls": 215,
+      "cost": null
+    }
+  }
+]

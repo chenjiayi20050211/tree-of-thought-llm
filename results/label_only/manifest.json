@@ -1,0 +1,28 @@
+{
+  "started": "2026-11-13T14:02:46.957555+00:00",
+  "indices": [
+    901,
+    902,
+    903,
+    904,
+    905
+  ],
+  "config": {
+    "backend": "deepseek-chat",
+    "temperature": 0.7,
+    "method_generate": "propose",
+    "method_evaluate": "value",
+    "method_select": "greedy",
+    "n_generate_sample": 1,
+    "n_evaluate_sample": 3,
+    "n_select_sample": 5
+  },
+  "batch_spend_limit_cny": 10,
+  "condition": "label_only",
+  "description": "Fresh trials; no replay; only intermediate-state reasoning differs between conditions; final-answer judge unchanged.",
+  "files_sha256": {
+    "src/tot/models.py": "c61701addf984d4ec05a1571988e66fbd491a975df0291636ae865ec31b49106",
+    "src/tot/methods/bfs.py": "4a95aa8decc5dd47a296dbe1e05295692b3879ea66edd12f13bd96355ffd7083"
+  },
+  "finished": "2026-11-13T14:23:28.262148+00:00"
+}

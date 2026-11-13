@@ -48,3 +48,12 @@ Solved means at least one retained final expression passes the authors' `Game24T
 ## Label-only ablation
 
 Run `python -u run_baseline.py --condition label_only` for the same five indices with the intermediate-state evaluator restricted to a bare label. Results go to `results/label_only`; baseline results are preserved. All other model, search, judging and budget settings are shared. This removes explicit output reasoning, not necessarily unobserved internal reasoning. Each condition has one fresh run per task; sampling variation remains a confound.
+
+## Completed comparison
+
+| Condition | Solved tasks | Total seconds | API calls | Total tokens |
+|---|---:|---:|---:|---:|
+| Reasoning baseline | 5/5 | 1965.36 | 1132 | 664408 |
+| Label-only ablation | 0/5 | 1241.19 | 1072 | 417703 |
+
+All ten trials completed. Label-only reduced token use by 37.1% and wall time by 36.8%, but solved none of these five tasks. This small, single-trial-per-task comparison does not establish general benchmark performance. See [comparison and limitations](results/COMPARISON.md), [CSV table](results/comparison.csv), and [ablation results](results/label_only/summary.json).
