@@ -9,6 +9,8 @@ def gpt(prompt, model="deepseek-chat", temperature=0.7, max_tokens=1000, n=1, st
         rule = 'Output exactly one lowercase word: sure or impossible. No other text.'
     elif prompt.startswith('Evaluate if'):
         rule = 'Evaluate the final input following the examples. Show your arithmetic reasoning first. End with a separate final line containing exactly one lowercase word: sure, likely, or impossible. No text after that line.'
+        if os.getenv('TOT_EVALUATION', 'reasoning') == 'label_only':
+            rule = 'Evaluate the final input. Output exactly one lowercase word: sure, likely, or impossible. No other text.'
     else:
         rule = 'Continue the last solution. Output only one line: Answer: <arithmetic expression using each original input once> = 24. No commentary.'
     return chatgpt([{"role":"system","content":rule},{"role":"user","content":prompt}], model, temperature, max_tokens, n, stop)

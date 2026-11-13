@@ -11,3 +11,7 @@ src/tree_of_thoughts_llm.egg-info/
 deepseek-config.txt
 .venv/
 venv/
+
+# Local detailed request logs and progress
+results/*/api-*.jsonl
+*-progress.log

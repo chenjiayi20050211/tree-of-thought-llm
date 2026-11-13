@@ -7,7 +7,11 @@ sys.path.insert(0,str(root/'src'))
 import tot.models as models
 import tot.methods.bfs as bfs
 from tot.tasks.game24 import Game24Task
-out=root/'results/baseline';out.mkdir(parents=True,exist_ok=True)
+parser=argparse.ArgumentParser()
+parser.add_argument('--condition', choices=['baseline','label_only'], default='baseline')
+condition=parser.parse_args().condition
+os.environ['TOT_EVALUATION']='reasoning' if condition=='baseline' else 'label_only'
+out=root/'results'/condition;out.mkdir(parents=True,exist_ok=True)
 if (out/'manifest.json').exists(): raise SystemExit('Existing experiment found; refusing to overwrite or repeat paid calls.')
 cfg=dict(l.split('=',1) for l in (root/'.env').read_text().splitlines() if '=' in l)
 def balance():
@@ -15,7 +19,7 @@ def balance():
  with urllib.request.urlopen(req,timeout=20) as r: data=json.load(r)
  return next(float(x['total_balance']) for x in data['balance_infos'] if x['currency']=='CNY')
 initial=balance(); args=argparse.Namespace(backend='deepseek-chat',temperature=0.7,method_generate='propose',method_evaluate='value',method_select='greedy',n_generate_sample=1,n_evaluate_sample=3,n_select_sample=5)
-manifest=dict(started=datetime.now(timezone.utc).isoformat(),indices=list(range(901,906)),config=vars(args),initial_balance_cny=initial,batch_spend_limit_cny=10,description='Fresh trials; no replay; intermediate-state reasoning enabled; final-answer judge identical in both conditions.')
+manifest=dict(started=datetime.now(timezone.utc).isoformat(),indices=list(range(901,906)),config=vars(args),initial_balance_cny=initial,batch_spend_limit_cny=10,condition=condition,description='Fresh trials; no replay; only intermediate-state reasoning differs between conditions; final-answer judge unchanged.')
 manifest['files_sha256']={str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [root/'src/tot/models.py',root/'src/tot/methods/bfs.py']}
 (out/'manifest.json').write_text(json.dumps(manifest,indent=2))
 original_chat=models.chatgpt
@@ -33,10 +37,10 @@ models.chatgpt=guarded
 summary=[]
 for number,index in enumerate(manifest['indices'],1):
  models.calls=models.prompt_tokens=models.completion_tokens=0;last_checked=-1
- os.environ['TOT_CALL_LIMIT']='600';os.environ['TOT_LOG']=f'results/baseline/api-{index}.jsonl'
+ os.environ['TOT_CALL_LIMIT']='600';os.environ['TOT_LOG']=f'results/{condition}/api-{index}.jsonl'
  task=Game24Task();bfs.gpt=models.gpt
  start=time.time();print(f'START {number}/5 | index {index} | numbers {task.get_input(index)}',flush=True)
- record=dict(index=index,input=task.get_input(index),config=vars(args))
+ record=dict(condition=condition,index=index,input=task.get_input(index),config=vars(args))
  stop_batch=False
  try:
   ys,info=bfs.solve(args,task,index,to_print=False)
