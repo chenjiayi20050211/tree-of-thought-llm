@@ -1,4 +1,5 @@
 import itertools
+import re
 import numpy as np
 from functools import partial
 from tot.models import gpt
@@ -32,8 +33,18 @@ def get_votes(task, x, ys, n_evaluate_sample):
     return values
 
 def get_proposals(task, x, y): 
+    if y and 'left: ' in y.strip().split('\n')[-1]:
+        remaining = y.strip().split('\n')[-1].split('left: ')[-1].split(')')[0].split()
+        if len(remaining) == 1 and remaining[0] != '24':
+            return []
     propose_prompt = task.propose_prompt_wrap(x, y)
     proposals = gpt(propose_prompt, n=1, stop=None)[0].split('\n')
+    if '(left: 24)' in y.strip().split('\n')[-1]:
+        proposals = [line.strip() for line in proposals if re.fullmatch(r'Answer: [0-9+*/(). =-]+', line.strip())]
+    else:
+        proposals = [line.strip() for line in proposals if re.fullmatch(r'-?[0-9.]+(?:/[0-9.]+)? [+*/-] -?[0-9.]+(?:/[0-9.]+)? = -?[0-9.]+(?:/[0-9.]+)? \(left: [-0-9./ ]+\)', line.strip())]
+    if not proposals:
+        raise ValueError('No parseable proposals: stop instead of evaluating prose')
     return [y + _ + '\n' for _ in proposals]
 
 def get_samples(task, x, y, n_generate_sample, prompt_sample, stop):
