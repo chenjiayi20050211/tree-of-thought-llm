@@ -1,0 +1,99 @@
+[
+  {
+    "index": 901,
+    "input": "1 2 4 7",
+    "status": "completed",
+    "scores": [
+      1,
+      1,
+      1,
+      1
+    ],
+    "success": true,
+    "seconds": 246.7413787841797,
+    "usage": {
+      "completion_tokens": 18742,
+      "prompt_tokens": 70497,
+      "calls": 180,
+      "cost": null
+    }
+  },
+  {
+    "index": 902,
+    "input": "2 5 8 11",
+    "status": "completed",
+    "scores": [
+      1,
+      1,
+      1,
+      0,
+      0
+    ],
+    "success": true,
+    "seconds": 610.9512319564819,
+    "usage": {
+      "completion_tokens": 83097,
+      "prompt_tokens": 117060,
+      "calls": 294,
+      "cost": null
+    }
+  },
+  {
+    "index": 903,
+    "input": "3 4 4 13",
+    "status": "completed",
+    "scores": [
+      1,
+      1,
+      1,
+      1,
+      1
+    ],
+    "success": true,
+    "seconds": 284.94833993911743,
+    "usage": {
+      "completion_tokens": 23903,
+      "prompt_tokens": 79333,
+      "calls": 202,
+      "cost": null
+    }
+  },
+  {
+    "index": 904,
+    "input": "6 7 8 9",
+    "status": "completed",
+    "scores": [
+      1,
+      1,
+      1
+    ],
+    "success": true,
+    "seconds": 568.7275221347809,
+    "usage": {
+      "completion_tokens": 71067,
+      "prompt_tokens": 109538,
+      "calls": 275,
+      "cost": null
+    }
+  },
+  {
+    "index": 905,
+    "input": "1 11 11 13",
+    "status": "completed",
+    "scores": [
+      1,
+      1,
+      0,
+      0,
+      0
+    ],
+    "success": true,
+    "seconds": 253.9876549243927,
+    "usage": {
+      "completion_tokens": 20109,
+      "prompt_tokens": 71062,
+      "calls": 181,
+      "cost": null
+    }
+  }
+]
